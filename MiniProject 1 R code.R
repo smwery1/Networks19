@@ -69,15 +69,15 @@ for(i in 1:nrow(eventAgg)){
 
 #Check for degree measure of centrality 
 
-degree <- apply(eventmatrix, 1, sum, na.rm=TRUE)
+centrality <- apply(eventmatrix, 1, sum, na.rm=TRUE)
 
 #create a matrix with both the name of the groupa nd the degree (not necessary but for fun)
-degreematrix <- as.matrix(rbind(colnames(eventmatrix), degree))
+centralmatrix <- as.matrix(rbind(colnames(eventmatrix), degree))
 
 #Find the group that has the most interactions and the number of interactions
 which.max(apply(eventmatrix, 1, sum, na.rm=TRUE))
 
-max(degree)
+max(centrality)
 
 #Most events occured with the syrian military
 
@@ -88,24 +88,28 @@ max(degree)
 library(igraph)
 g = graph_from_adjacency_matrix(eventmatrix, 
                                 mode='undirected', 
-                                weighted=F,
+                                weighted=T,
                                 diag=FALSE
 )
 
 
 
 # names for large actors only (eliminates graph clutter)
-V(g)$label <- ifelse( degree>=100, V(g)$name, NA )
+V(g)$label <- ifelse( centrality>=100, V(g)$name, NA )
 
 #Set a color parameter to identify "major players" with more than 1000 interactions
-V(g)$color <- ifelse( degree>=1000, 'yellow', 'grey' )
+V(g)$color <- ifelse( centrality>=1000, 'yellow', 'grey' )
 
 #Create a size attribute to make nodes larger when interactions are larger
 V(g)$size <- log(degree)
 
 
+#Change the weight of the lines by total interactions
+E(g)$weight <- log(E(g)$weight)/1.5
+
+
 # final plot
-par(mar=c(2,2,2,2))
+par(mar=c(4,4,4,4))
 plot(g,
      layout=layout_with_gem,
      vertex.label=V(g)$label, 
@@ -115,7 +119,7 @@ plot(g,
      vertex.label.cex = .5, #cut down label size
      edge.curved =.25, # make edges curved
      edge.color ="grey", 
-     edge.width = 1.4,
+     edge.width = E(g)$weight,
      vertex.size = 1,
      vertex.size2 = 1,
      asp = 0,
@@ -123,6 +127,9 @@ plot(g,
      
 )
 
+#Find the Max Degree
 
+which.max(degree(g))
 
+max(degree(g))
 
